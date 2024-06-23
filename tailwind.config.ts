@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       animation: {
         'fade-in-down': 'fade-in-down 1s ease-out',
+        'fade-in-down-md': 'fade-in-down 0.3s ease-out',
         'fade-in-up': 'fade-in-up 1s ease-out',
         'slide-in-up': 'slide-in-up 0.8s ease-out',
       },
