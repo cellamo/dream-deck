@@ -8,6 +8,10 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Dream Deck',
   description: 'A dream journal app with AI analysis',
+  icons: {
+    icon: '/dreamdeck-icon.png',
+    apple: '/dreamdeck-icon.png',
+  },
 }
 
 export default function RootLayout({
@@ -17,9 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <main>{children}</main>
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

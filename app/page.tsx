@@ -3,6 +3,8 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import { ArrowRight, Brain, Palette, BarChart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image'
+import AnimatedSection from '../components/AnimatedSection'
 
 export default function Home() {
   const router = useRouter();
@@ -12,24 +14,24 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-800 to-blue-900 text-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-purple-800 to-blue-900 text-white">
       <Navbar />
       
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 text-center">
-        <h1 className="text-5xl md:text-6xl font-extrabold mb-4 animate-fade-in-down">
+      <AnimatedSection className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 text-center">
+        <h1 className="text-5xl md:text-6xl font-extrabold mb-4 animate-fade-in-down-slow">
           Unlock the Power of Your Dreams
         </h1>
-        <p className="text-xl md:text-2xl mb-8 text-purple-200 animate-fade-in-up">
+        <p className="text-xl md:text-2xl mb-8 text-purple-200 animate-fade-in-up-slow">
           Record, analyze, and visualize your dreams with AI-powered insights
         </p>
         <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
           Get Started
         </button>
-      </section>
+      </AnimatedSection>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
+      <AnimatedSection id="features" className="py-20 px-4 sm:px-6 lg:px-8">
         <h2 className="text-4xl font-bold text-center mb-12">Discover Dream Deck Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <FeatureCard
@@ -48,10 +50,10 @@ export default function Home() {
             description="Identify recurring themes and symbols in your dreams over time."
           />
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-blue-900/30">
+      <AnimatedSection id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-blue-900/30">
         <h2 className="text-4xl font-bold text-center mb-12">How Dream Deck Works</h2>
         <div className="max-w-3xl mx-auto">
           <StepCard
@@ -70,10 +72,10 @@ export default function Home() {
             description="View AI-generated artwork based on your dreams and explore your dream patterns over time."
           />
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 text-center">
+      <AnimatedSection className="py-20 px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl font-bold mb-4">Ready to Decode Your Dreams?</h2>
         <p className="text-xl mb-8 text-purple-200">
           Join Dream Deck today and start your journey of self-discovery.
@@ -81,7 +83,7 @@ export default function Home() {
         <button onClick={handleSignUpClick} className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
           Sign Up Now
         </button>
-      </section>
+      </AnimatedSection>
 
       {/* Footer */}
       <footer className="bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
@@ -90,6 +92,13 @@ export default function Home() {
             <h3 className="text-2xl font-bold">Dream Deck</h3>
             <p className="text-purple-300">Unlock the power of your subconscious</p>
           </div>
+          <Image 
+  src="/dreamdeck-icon.png" 
+  alt="Dream Deck Logo" 
+  width={128} 
+  height={128}
+  className="md:-my-10"
+/>
           <div className="flex space-x-4">
             <FooterLink href="#features">Features</FooterLink>
             <FooterLink href="#how-it-works">How It Works</FooterLink>
@@ -103,7 +112,7 @@ export default function Home() {
 }
 
 const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-  <div className="bg-purple-800/30 p-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+  <div className="bg-purple-500/30 p-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
     <div className="flex justify-center mb-4">{icon}</div>
     <h3 className="text-2xl font-bold mb-2">{title}</h3>
     <p className="text-purple-200">{description}</p>
