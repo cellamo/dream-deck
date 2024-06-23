@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Brain, Mail, Lock, User, Calendar } from 'lucide-react';
-
+import { Brain, Mail, Lock, User, Calendar, Home } from 'lucide-react';
+import Link from 'next/link';
 
 // Move InputField component outside of AuthPage
 const InputField: React.FC<{
@@ -254,6 +254,12 @@ const AuthPage: React.FC = () => {
           )}
         </div>
       </div>
+      <Link href="/" className="fixed top-4 left-4 bg-purple-600 hover:bg-purple-700 text-white font-bold p-3 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 hover:rotate-12 group">
+      <Home className="h-6 w-6 group-hover:animate-pulse" />
+      <span className="absolute left-full ml-2 px-2 py-1 bg-purple-800 text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        Go Home
+      </span>
+    </Link>
     </div>
   );
 };
