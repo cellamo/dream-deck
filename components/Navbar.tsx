@@ -10,10 +10,11 @@ import {
   UserCircle,
   Settings,
   LogOut,
+  Rocket,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useAuth } from '../app/AuthContext';
+import { useAuth } from "../app/AuthContext";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,10 +50,14 @@ const Navbar: React.FC = () => {
   const handleAuth = () => {
     if (user) {
       logout();
-      router.push('/');
+      router.push("/");
     } else {
       router.push("/auth");
     }
+  };
+
+  const launchApp = () => {
+    router.push("/app");
   };
 
   const toggleDropdown = () => {
@@ -75,16 +80,24 @@ const Navbar: React.FC = () => {
               </span>
             </Link>
           </div>
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-center space-x-4">
-              <NavLink href="#features">Features</NavLink>
-              <NavLink href="#how-it-works">How It Works</NavLink>
-              <NavLink href="#pricing">Pricing</NavLink>
-              <NavLink href="#contact">Contact</NavLink>
-              {user ? (
+          <div className="hidden md:flex items-center space-x-4">
+            <NavLink href="#features">Features</NavLink>
+            <NavLink href="#how-it-works">How It Works</NavLink>
+            <NavLink href="#pricing">Pricing</NavLink>
+            <NavLink href="#contact">Contact</NavLink>
+            {user ? (
+              <>
+                <button
+                  onClick={launchApp}
+                  className="bg-gradient-to-r from-teal-400 to-blue-500 hover:from-teal-500 hover:to-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                >
+                  <Rocket className="h-4 w-4 mr-2 text-white" />
+                  Launch App
+                </button>
+
                 <div className="relative" ref={dropdownRef}>
                   <button
-                    onClick={toggleDropdown}
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
                   >
                     <UserCircle className="h-6 w-6 text-white" />
@@ -92,7 +105,9 @@ const Navbar: React.FC = () => {
                   {isDropdownOpen && (
                     <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
-                        Signed in as<br /><strong>{user.username}</strong>
+                        Signed in as
+                        <br />
+                        <strong>{user.username}</strong>
                       </div>
                       <Link
                         href="/profile"
@@ -101,13 +116,6 @@ const Navbar: React.FC = () => {
                         <UserCircle className="inline-block h-4 w-4 mr-2" />
                         Profile
                       </Link>
-                      <Link
-      href="/record-dream"
-      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-    >
-      <Moon className="inline-block h-4 w-4 mr-2" />
-      Record Dream
-    </Link>
                       <Link
                         href="/settings"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -125,16 +133,16 @@ const Navbar: React.FC = () => {
                     </div>
                   )}
                 </div>
-              ) : (
-                <button
-                  onClick={handleAuth}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center"
-                >
-                  <LogIn className="h-4 w-4 mr-1" />
-                  Login / Signup
-                </button>
-              )}
-            </div>
+              </>
+            ) : (
+              <button
+                onClick={handleAuth}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Login / Signup
+              </button>
+            )}
           </div>
           <div className="md:hidden">
             <button
@@ -157,7 +165,11 @@ const Navbar: React.FC = () => {
             className={`
               px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-900/95 shadow-lg
               transition-all duration-300 ease-in-out bg-transparent
-              ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}
+              ${
+                isOpen
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 -translate-y-4"
+              }
               animate-fade-in-down-md 
             `}
           >
@@ -168,7 +180,9 @@ const Navbar: React.FC = () => {
             {user ? (
               <>
                 <div className="px-3 py-2 text-sm text-purple-300 border-b border-purple-700">
-                  Signed in as<br /><strong>{user.username}</strong>
+                  Signed in as
+                  <br />
+                  <strong>{user.username}</strong>
                 </div>
                 <MobileNavLink href="/profile">Profile</MobileNavLink>
                 <MobileNavLink href="/settings">Settings</MobileNavLink>
