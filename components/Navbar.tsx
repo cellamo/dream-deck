@@ -1,5 +1,5 @@
 "use client";
-// components/Navbar.tsx
+
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
@@ -13,14 +13,15 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useAuth } from '../app/AuthContext';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,12 +47,14 @@ const Navbar: React.FC = () => {
   }, []);
 
   const handleAuth = () => {
-    if (isAuthenticated) {
-      setIsAuthenticated(false);
+    if (user) {
+      logout();
+      router.push('/');
     } else {
       router.push("/auth");
     }
   };
+
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -78,7 +81,7 @@ const Navbar: React.FC = () => {
               <NavLink href="#how-it-works">How It Works</NavLink>
               <NavLink href="#pricing">Pricing</NavLink>
               <NavLink href="#contact">Contact</NavLink>
-              {isAuthenticated ? (
+              {user ? (
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={toggleDropdown}
@@ -88,6 +91,9 @@ const Navbar: React.FC = () => {
                   </button>
                   {isDropdownOpen && (
                     <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
+                        Signed in as<br /><strong>{user.username}</strong>
+                      </div>
                       <Link
                         href="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -95,6 +101,13 @@ const Navbar: React.FC = () => {
                         <UserCircle className="inline-block h-4 w-4 mr-2" />
                         Profile
                       </Link>
+                      <Link
+      href="/record-dream"
+      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+    >
+      <Moon className="inline-block h-4 w-4 mr-2" />
+      Record Dream
+    </Link>
                       <Link
                         href="/settings"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -118,7 +131,7 @@ const Navbar: React.FC = () => {
                   className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center"
                 >
                   <LogIn className="h-4 w-4 mr-1" />
-                  {isAuthenticated ? "Logout" : "Login / Signup"}
+                  Login / Signup
                 </button>
               )}
             </div>
@@ -142,18 +155,21 @@ const Navbar: React.FC = () => {
         <div className="md:hidden">
           <div
             className={`
-        px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-900/95 shadow-lg
-        transition-all duration-300 ease-in-out bg-transparent
-        ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}
-        animate-fade-in-down-md 
-      `}
+              px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-900/95 shadow-lg
+              transition-all duration-300 ease-in-out bg-transparent
+              ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}
+              animate-fade-in-down-md 
+            `}
           >
             <MobileNavLink href="#features">Features</MobileNavLink>
             <MobileNavLink href="#how-it-works">How It Works</MobileNavLink>
             <MobileNavLink href="#pricing">Pricing</MobileNavLink>
             <MobileNavLink href="#contact">Contact</MobileNavLink>
-            {isAuthenticated ? (
+            {user ? (
               <>
+                <div className="px-3 py-2 text-sm text-purple-300 border-b border-purple-700">
+                  Signed in as<br /><strong>{user.username}</strong>
+                </div>
                 <MobileNavLink href="/profile">Profile</MobileNavLink>
                 <MobileNavLink href="/settings">Settings</MobileNavLink>
                 <button
