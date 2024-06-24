@@ -5,6 +5,9 @@ import { Brain, Mail, Lock, User, Calendar, Home, LogIn } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
+import { signup, login } from './authClient';
+import { useRouter } from 'next/navigation';
+import { useAuth } from './AuthContext';
 
 // Move InputField component outside of AuthPage
 const InputField: React.FC<{
@@ -37,6 +40,9 @@ const MemoizedInputField = React.memo(InputField);
 MemoizedInputField.displayName = "InputField";
 
 const AuthPage: React.FC = () => {
+  const router = useRouter();
+  const { setUser } = useAuth();
+
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
@@ -86,24 +92,23 @@ const AuthPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulating API call
-    setTimeout(() => {
+    try {
+      let result;
       if (isLogin) {
-        setMessage(`Login successful for ${formData.email}`);
+        result = await login(formData.email, formData.password);
       } else {
-        setMessage(`Registration successful for ${formData.email}`);
+        result = await signup(formData.username, formData.email, formData.password);
       }
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('user', JSON.stringify(result.user));
+      setUser(result.user); // Update the user in AuthContext
+      setMessage(`${isLogin ? 'Login' : 'Registration'} successful for ${result.user.email}`);
+      router.push('/'); 
+    } catch (error : any) {
+      setMessage(`Error: ${error.message}`);
+    } finally {
       setIsLoading(false);
-      // Reset form fields
-      setFormData({
-        name: "",
-        birthday: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-    }, 2000);
+    }
   };
 
   const PasswordCriterion: React.FC<{ met: boolean; text: string }> = ({

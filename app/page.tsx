@@ -3,11 +3,20 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import { ArrowRight, Brain, Palette, BarChart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from './AuthContext';
+import { useEffect } from 'react';
 import Image from 'next/image'
 import AnimatedSection from '../components/AnimatedSection'
 
 export default function Home() {
+  const { user } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
 
   const handleSignUpClick = () => {
     router.push('/auth');
