@@ -1,4 +1,5 @@
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { SIGNUP, LOGIN } from './graphql/mutation';
 
 const client = new ApolloClient({
   uri: 'http://localhost:4000/graphql',
@@ -6,21 +7,8 @@ const client = new ApolloClient({
 });
 
 export const signup = async (username: string, email: string, password: string) => {
-  const mutation = gql`
-    mutation Signup($username: String!, $email: String!, $password: String!) {
-      signup(username: $username, email: $email, password: $password) {
-        token
-        user {
-          id
-          username
-          email
-        }
-      }
-    }
-  `;
-
   const { data } = await client.mutate({
-    mutation,
+    mutation: SIGNUP,
     variables: { username, email, password },
   });
 
@@ -28,23 +16,11 @@ export const signup = async (username: string, email: string, password: string) 
 };
 
 export const login = async (email: string, password: string) => {
-  const mutation = gql`
-    mutation Login($email: String!, $password: String!) {
-      login(email: $email, password: $password) {
-        token
-        user {
-          id
-          username
-          email
-        }
-      }
-    }
-  `;
-
   const { data } = await client.mutate({
-    mutation,
+    mutation: LOGIN,
     variables: { email, password },
   });
 
   return data.login;
 };
+

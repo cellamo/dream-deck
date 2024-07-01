@@ -5,9 +5,25 @@ import { Brain, Mail, Lock, User, Calendar, Home, LogIn } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
-import { signup, login } from './authClient';
-import { useRouter } from 'next/navigation';
-import { useAuth } from './AuthContext';
+import { useRouter } from "next/navigation";
+import { useAuth } from "./AuthContext";
+import { ENDPOINTS } from "./api";
+
+const isAtLeast18YearsOld = (birthday: string): boolean => {
+  const today = new Date();
+  const birthDate = new Date(birthday);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  return age >= 18;
+};
 
 // Move InputField component outside of AuthPage
 const InputField: React.FC<{
@@ -43,6 +59,15 @@ const AuthPage: React.FC = () => {
   const router = useRouter();
   const { setUser } = useAuth();
 
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000); // Error disappears after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
@@ -51,6 +76,7 @@ const AuthPage: React.FC = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    usernameOrEmail: "",
   });
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +100,22 @@ const AuthPage: React.FC = () => {
     []
   );
 
+  const isPasswordStrong = (password: string): boolean => {
+    const minLength = 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    return (
+      password.length >= minLength &&
+      hasUppercase &&
+      hasLowercase &&
+      hasNumber &&
+      hasSpecialChar
+    );
+  };
+
   useEffect(() => {
     if (!isLogin) {
       setPasswordCriteria({
@@ -90,22 +132,86 @@ const AuthPage: React.FC = () => {
   }, [formData.password, isLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log(formData);
     e.preventDefault();
     setIsLoading(true);
     try {
-      let result;
-      if (isLogin) {
-        result = await login(formData.email, formData.password);
-      } else {
-        result = await signup(formData.username, formData.email, formData.password);
+      if (!isLogin) {
+        // Add age validation for signup
+        if (!isAtLeast18YearsOld(formData.birthday)) {
+          throw new Error(dreamErrors.underage);
+        }
+
+        // Check password strength before sending to backend
+        if (!isPasswordStrong(formData.password)) {
+          throw new Error(dreamErrors.weakPassword);
+        }
+
+        // Check if passwords match
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error(dreamErrors.passwordMismatch);
+        }
       }
-      localStorage.setItem('token', result.token);
-      localStorage.setItem('user', JSON.stringify(result.user));
+
+      let result;
+      const endpoint = isLogin ? ENDPOINTS.LOGIN : ENDPOINTS.SIGNUP;
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          isLogin
+            ? {
+                usernameOrEmail: formData.usernameOrEmail,
+                password: formData.password,
+              }
+            : {
+                username: formData.username,
+                email: formData.email,
+                name: formData.name,
+                birthday: formData.birthday,
+                password: formData.password,
+                confirm_password: formData.confirmPassword,
+              }
+        ),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        switch (data.error) {
+          case "weakPassword":
+            throw new Error(dreamErrors.weakPassword);
+          case "userExists":
+            throw new Error(dreamErrors.userExists);
+          case "invalidEmail":
+            throw new Error(dreamErrors.invalidEmail);
+          case "passwordMismatch":
+            throw new Error(dreamErrors.passwordMismatch);
+          case "invalidCredentials":
+            throw new Error(dreamErrors.invalidCredentials);
+          case "serverError":
+            throw new Error(dreamErrors.serverError);
+          default:
+            throw new Error(data.error || "An unknown error occurred");
+        }
+      }
+
+      result = data;
+      localStorage.setItem("token", result.access);
+      localStorage.setItem("refresh_token", result.refresh);
+      localStorage.setItem("user", JSON.stringify(result.user));
       setUser(result.user); // Update the user in AuthContext
-      setMessage(`${isLogin ? 'Login' : 'Registration'} successful for ${result.user.email}`);
-      router.push('/'); 
-    } catch (error : any) {
-      setMessage(`Error: ${error.message}`);
+      setMessage(
+        `${isLogin ? "Login" : "Registration"} successful for ${
+          result.user.email
+        }`
+      );
+      router.push("/");
+    } catch (error: any) {
+      console.log(error);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -157,16 +263,16 @@ const AuthPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-800 to-blue-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {error && <DreamError message={error} />}
       <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="flex justify-center">
-        <Image 
-  src="/dreamdeck-icon.png" 
-  alt="Dream Deck Logo" 
-  width={192} 
-  height={192} 
-  className="opacity-80 hover:opacity-100 transition-opacity duration-300"
-
-/>
+          <Image
+            src="/dreamdeck-icon.png"
+            alt="Dream Deck Logo"
+            width={192}
+            height={192}
+            className="opacity-80 hover:opacity-100 transition-opacity duration-300"
+          />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
           {isLogin ? "Sign in to DreamDeck" : "Create your DreamDeck account"}
@@ -205,12 +311,12 @@ const AuthPage: React.FC = () => {
               </>
             )}
             <MemoizedInputField
-              id="email"
-              type="email"
-              placeholder="Email address"
-              value={formData.email}
+              id="usernameOrEmail"
+              type="text"
+              placeholder="Username or Email"
+              value={formData.usernameOrEmail}
               onChange={handleInputChange}
-              icon={<Mail className="text-purple-400" size={20} />}
+              icon={<User className="text-purple-400" size={20} />}
             />
             <MemoizedInputField
               id="password"
@@ -340,3 +446,35 @@ const AuthPage: React.FC = () => {
 };
 
 export default AuthPage;
+
+const DreamError: React.FC<{ message: string }> = ({ message }) => {
+  return (
+    <div className="fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+      <div className="bg-gradient-to-r from-purple-900/80 to-indigo-900/80 backdrop-blur-md p-4 rounded-lg shadow-lg border border-purple-500/50 animate-float">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <Brain className="h-6 w-6 text-purple-300 animate-pulse" />
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-purple-100">{message}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const dreamErrors = {
+  underage:
+    "Your dream journey begins at 18. Please come back when you're ready!",
+  invalidEmail: "This email doesn't exist in the dream realm. Try another!",
+  passwordMismatch:
+    "Your dream keys don't match. Try synchronizing them again!",
+  weakPassword:
+    "Your dream gate needs a stronger lock. Make your password more complex!",
+  userExists:
+    "A dreamer with this username already exists in our realm. Choose another!",
+  serverError: "The dream servers are in a deep sleep. Please try again later!",
+  invalidCredentials:
+    "Your dream key doesn't fit. Check your credentials and try again!",
+};
