@@ -17,26 +17,75 @@ const DreamFeed: React.FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
-    fetchDreams();
+    const fetchData = async () => {
+      try {
+        await fetchDreams();
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred");
+        }
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
   }, [refreshTrigger]);
 
   const triggerRefresh = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
 
+  const refreshToken = async () => {
+    const refreshToken = localStorage.getItem("refresh_token");
+    if (!refreshToken) throw new Error("No refresh token available");
+  
+    const response = await fetch(ENDPOINTS.TOKEN_REFRESH, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+  
+    if (!response.ok) throw new Error("Failed to refresh token");
+  
+    const data = await response.json();
+    localStorage.setItem("token", data.access);
+    return data.access;
+  };
+
   const fetchDreams = async () => {
     try {
-      const response = await fetch(ENDPOINTS.DREAMS, {
+      let response = await fetch(ENDPOINTS.DREAMS, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+      console.log('Fetch response:', response);
+      if (response.status === 401) {
+        // Token expired, try to refresh
+        const newToken = await refreshToken();
+        // Retry the request with the new token
+        response = await fetch(ENDPOINTS.DREAMS, {
+          headers: {
+            Authorization: `Bearer ${newToken}`,
+          },
+        });
+      }
+  
       if (!response.ok) throw new Error("Failed to fetch dreams");
+      
       const data = await response.json();
       setDreams(data);
       setLoading(false);
     } catch (err) {
-      setError("Error loading dreams. Please try again later.");
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
       setLoading(false);
     }
   };

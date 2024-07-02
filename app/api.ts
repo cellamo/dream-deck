@@ -5,4 +5,8 @@ export const ENDPOINTS = {
     LOGIN: `${API_BASE_URL}/login/`,
     DREAMS: `${API_BASE_URL}/dreams/`,
     MY_DREAMS: `${API_BASE_URL}/dreams/my_dreams/`,
+
+    TOKEN: `${API_BASE_URL}/token/`,
+    TOKEN_REFRESH: `${API_BASE_URL}/token/refresh/`,
+    TOKEN_VERIFY: `${API_BASE_URL}/token/verify/`,
   };

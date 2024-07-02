@@ -25,7 +25,7 @@ const Dashboard = () => {
     const delay = setTimeout(() => {
       if (!user) {
         router.push("/403");
-      }
+      } 
     }, 50);
 
     return () => clearTimeout(delay);
