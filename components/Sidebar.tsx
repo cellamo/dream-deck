@@ -6,6 +6,7 @@ import { useAuth } from '../app/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useDarkMode } from '../app/DarkModeContext';
 import DarkModeToggle from './DarkModeToggle';
+import { usePathname } from 'next/navigation';
 
 interface SidebarProps {
   onPinChange: (isPinned: boolean) => void;
@@ -19,6 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onPinChange }) => {
   const router = useRouter();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { darkMode } = useDarkMode();
+  const pathname = usePathname();
 
   const togglePin = () => {
     const newPinnedState = !isPinned;
@@ -96,15 +98,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onPinChange }) => {
       </div>
 
       <nav className="mt-8">
-        <ul className="space-y-2">
-          <SidebarLink href="/dashboard" icon={Book} text="Dream Journal" isOpen={isOpen} darkMode={darkMode} />
-          <SidebarLink href="/analysis" icon={Brain} text="AI Analysis" isOpen={isOpen} darkMode={darkMode} />
-          <SidebarLink href="/artwork" icon={ImageIcon} text="Dream Artwork" isOpen={isOpen} darkMode={darkMode} />
-          <SidebarLink href="/soundscapes" icon={Music} text="Dream Soundtracks" isOpen={isOpen} darkMode={darkMode} />
-          <SidebarLink href="/community" icon={Users} text="Dream Community" isOpen={isOpen} darkMode={darkMode} />
-          <SidebarLink href="/challenges" icon={Target} text="Dream Challenges" isOpen={isOpen} darkMode={darkMode} />
-          <SidebarLink href="/lucid-training" icon={Moon} text="Lucid Dreaming" isOpen={isOpen} darkMode={darkMode} />
-        </ul>
+      <ul className="space-y-2">
+  <SidebarLink href="/dashboard" icon={Book} text="Dream Journal" isOpen={isOpen} darkMode={darkMode} isActive={pathname === '/dashboard'} />
+  <SidebarLink href="/analysis" icon={Brain} text="AI Analysis" isOpen={isOpen} darkMode={darkMode} isActive={pathname === '/analysis'} />
+  <SidebarLink href="/artwork" icon={ImageIcon} text="Dream Artwork" isOpen={isOpen} darkMode={darkMode} isActive={pathname === '/artwork'} />
+  <SidebarLink href="/soundscapes" icon={Music} text="Dream Soundtracks" isOpen={isOpen} darkMode={darkMode} isActive={pathname === '/soundscapes'} />
+  <SidebarLink href="/community" icon={Users} text="Dream Community" isOpen={isOpen} darkMode={darkMode} isActive={pathname === '/community'} />
+  <SidebarLink href="/challenges" icon={Target} text="Dream Challenges" isOpen={isOpen} darkMode={darkMode} isActive={pathname === '/challenges'} />
+  <SidebarLink href="/lucid-training" icon={Moon} text="Lucid Dreaming" isOpen={isOpen} darkMode={darkMode} isActive={pathname === '/lucid-training'} />
+</ul>
+
       </nav>
 
       <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -176,19 +179,28 @@ interface SidebarLinkProps {
   text: string;
   isOpen: boolean;
   darkMode: boolean;
+  isActive: boolean;
 }
 
-const SidebarLink = ({ href, icon: Icon, text, isOpen, darkMode }) => (
+const SidebarLink = ({ href, icon: Icon, text, isOpen, darkMode, isActive }) => (
   <li>
-    <Link href={href} className={`flex items-center space-x-4 px-6 py-3 ${
-      darkMode
-        ? 'text-purple-200 hover:text-white hover:bg-purple-600/30'
-        : 'text-indigo-800 hover:text-indigo-900 hover:bg-indigo-300/50'
-    } transition-all duration-200 ${isOpen ? 'rounded-l-full' : 'justify-center'}`}>
+    <Link 
+      href={href} 
+      className={`flex items-center space-x-4 px-6 py-3 ${
+        darkMode
+          ? isActive
+            ? 'text-white bg-purple-800/50'
+            : 'text-purple-200 hover:text-white hover:bg-purple-600/30'
+          : isActive
+            ? 'text-indigo-900 bg-indigo-400/50'
+            : 'text-indigo-800 hover:text-indigo-900 hover:bg-indigo-300/50'
+      } transition-all duration-200 ${isOpen ? 'rounded-l-full' : 'justify-center'}`}
+    >
       <Icon size={24} className="text-center" />
       {isOpen && <span className="font-medium">{text}</span>}
     </Link>
   </li>
 );
+
 
 export default Sidebar;
