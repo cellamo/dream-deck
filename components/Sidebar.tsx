@@ -182,10 +182,10 @@ interface SidebarLinkProps {
   isActive: boolean;
 }
 
-const SidebarLink = ({ href, icon: Icon, text, isOpen, darkMode, isActive }) => (
+const SidebarLink: React.FunctionComponent<SidebarLinkProps> = ({ href, icon: Icon, text, isOpen, darkMode, isActive }) => (
   <li>
     <Link 
-      href={href} 
+      href={href}
       className={`flex items-center space-x-4 px-6 py-3 ${
         darkMode
           ? isActive
