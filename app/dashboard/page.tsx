@@ -5,8 +5,6 @@ import Sidebar from '../../components/Sidebar';
 import DreamFeed from '../../components/DreamFeed';
 import InsightsPanel from '../../components/InsightsPanel';
 import QuickRecordButton from '../../components/QuickRecordButton';
-import { ApolloProvider } from '@apollo/client';
-import client from '../lib/apollo-client';
 import { useAuth } from '../AuthContext';
 import { useRouter } from 'next/navigation';
 import { useDarkMode } from '../DarkModeContext';
@@ -16,9 +14,14 @@ const Dashboard = () => {
   const { user } = useAuth();
   const router = useRouter();
   const { darkMode } = useDarkMode();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handlePinChange = (isPinned: boolean) => {
     setIsSidebarPinned(isPinned);
+  };
+
+  const triggerRefresh = () => {
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   useEffect(() => {
@@ -32,7 +35,6 @@ const Dashboard = () => {
   }, [user, router]);
 
   return (
-    <ApolloProvider client={client}>
       <div className={`min-h-screen ${
         darkMode
           ? 'bg-gradient-to-b from-gray-900 via-purple-800 to-blue-900'
@@ -56,9 +58,8 @@ const Dashboard = () => {
             </div>
           </main>
         </div>
-        <QuickRecordButton />
+        <QuickRecordButton triggerRefresh={triggerRefresh} />
       </div>
-    </ApolloProvider>
   );
 };
 

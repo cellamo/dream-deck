@@ -4,6 +4,7 @@ import DeleteConfirmation from './DeleteConfirmation';
 import { useDarkMode } from '@/app/DarkModeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ENDPOINTS } from '@/app/api';
+import { useRouter } from 'next/navigation';
 
 type Dream = {
   id: string;
@@ -20,7 +21,8 @@ interface DreamCardProps {
 const DreamCard: React.FC<DreamCardProps> = ({ dream, onDelete }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const darkModeContext = useDarkMode();
-  const darkMode = darkModeContext ? darkModeContext.darkMode : false; // Provide a default value
+  const darkMode = darkModeContext ? darkModeContext.darkMode : false;
+  const router = useRouter();
 
   const readableDate = new Date(parseInt(dream.date)).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -63,6 +65,10 @@ const DreamCard: React.FC<DreamCardProps> = ({ dream, onDelete }) => {
     setShowDeleteConfirmation(false);
   };
 
+  const handleViewDream = () => {
+    router.push(`/dreams/${dream.id}`);
+  };
+
   return (
     <div className={`relative rounded-lg overflow-hidden`}>
       <motion.div
@@ -70,7 +76,7 @@ const DreamCard: React.FC<DreamCardProps> = ({ dream, onDelete }) => {
           darkMode 
             ? 'bg-purple-800 bg-opacity-75' 
             : 'bg-purple-100 bg-opacity-75'
-        } p-6 shadow-lg`}
+        } p-6 shadow-lg relative`}
       >
         <button
           onClick={handleDeleteClick}
@@ -79,8 +85,8 @@ const DreamCard: React.FC<DreamCardProps> = ({ dream, onDelete }) => {
             darkMode 
               ? 'bg-gray-700 hover:bg-red-600' 
               : 'bg-gray-200 hover:bg-red-400'
-          } transition-all duration-300 ease-in-out transform hover:scale-110 group z-10`}
-          title="Delete dream"
+            } transition-all duration-300 ease-in-out transform hover:scale-110 group`} // Lower z-index
+            title="Delete dream"
         >
           <Trash2 className={`w-5 h-5 ${
             darkMode 
@@ -94,6 +100,7 @@ const DreamCard: React.FC<DreamCardProps> = ({ dream, onDelete }) => {
                 onConfirm={handleConfirmDelete}
                 onCancel={handleCancelDelete}
                 darkMode={darkMode}
+                className="z-[20]"
               />
             )}
           </AnimatePresence>
@@ -120,7 +127,7 @@ const DreamCard: React.FC<DreamCardProps> = ({ dream, onDelete }) => {
                 ? 'bg-blue-700 hover:bg-blue-600' 
                 : 'bg-blue-500 hover:bg-blue-400'
             } text-white rounded-full shadow-lg transition-all duration-300 transform hover:scale-105`}
-            onClick={() => console.log('View Dream Details')}
+            onClick={handleViewDream}
           >
             View Dream
           </button>

@@ -5,6 +5,13 @@ export const ENDPOINTS = {
     LOGIN: `${API_BASE_URL}/login/`,
     DREAMS: `${API_BASE_URL}/dreams/`,
     MY_DREAMS: `${API_BASE_URL}/dreams/my_dreams/`,
+    EMOTIONS: `${API_BASE_URL}/emotions/`,
+
+    THEMES: `${API_BASE_URL}/themes/`,
+
+    SUGGEST_THEMES: `${API_BASE_URL}/suggest-themes/`,
+    SUGGEST_EMOTIONS: `${API_BASE_URL}/suggest-emotions/`,
+    SUGGEST_TITLE: `${API_BASE_URL}/suggest-title/`,
 
     TOKEN: `${API_BASE_URL}/token/`,
     TOKEN_REFRESH: `${API_BASE_URL}/token/refresh/`,

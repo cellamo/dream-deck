@@ -7,6 +7,7 @@ interface DeleteConfirmationProps {
   onConfirm: () => void;
   onCancel: () => void;
   darkMode: boolean;
+  className?: string;
 }
 
 const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({ onConfirm, onCancel, darkMode }) => {
