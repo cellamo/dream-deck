@@ -77,7 +77,7 @@ export default function Dashboard() {
       </header>
       <main className="p-6">
         <section className="mb-8">
-          <h2 className="text-3xl font-bold mb-4">Today's Dream Entry</h2>
+          <h2 className="text-3xl font-bold mb-4">Today&apos;s Dream Entry</h2>
           <div className="bg-purple-500/30 p-4 rounded-lg flex items-center space-x-4">
             <Mic className="w-10 h-10 text-purple-300" />
             <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full">
