@@ -1,5 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { X, Cloud, Sparkles, Moon, Sun, Star, Feather, Volume2, Tag, Heart } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  X,
+  Cloud,
+  Sparkles,
+  Moon,
+  Sun,
+  Star,
+  Feather,
+  Volume2,
+  Tag,
+  Heart,
+} from "lucide-react";
 import { useDarkMode } from "@/app/DarkModeContext";
 import { ENDPOINTS } from "@/app/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,12 +42,17 @@ interface Theme {
   isAISuggested?: boolean;
 }
 
-const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCreated }) => {
+const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
+  onClose,
+  onDreamCreated,
+}) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isLucid, setIsLucid] = useState(false);
 
-  const [emotions, setEmotions] = useState<{ emotion: string; intensity: number }[]>([]);
+  const [emotions, setEmotions] = useState<
+    { emotion: string; intensity: number }[]
+  >([]);
   const [themes, setThemes] = useState<string[]>([]);
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
@@ -44,12 +60,15 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const { darkMode } = useDarkMode();
-  
-  const [selectedEmotions, setSelectedEmotions] = useState<SelectedEmotion[]>([]);
+
+  const [selectedEmotions, setSelectedEmotions] = useState<SelectedEmotion[]>(
+    []
+  );
   const [availableEmotions, setAvailableEmotions] = useState<Emotion[]>([]);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [isAIThinkingEmotions, setIsAIThinkingEmotions] = useState(false);
-  const [aiSuggestedEmotions, setAiSuggestedEmotions] = useState<boolean>(false);
+  const [aiSuggestedEmotions, setAiSuggestedEmotions] =
+    useState<boolean>(false);
   const [aiSuggestedThemes, setAiSuggestedThemes] = useState<boolean>(false);
   const [isAIThinkingTitle, setIsAIThinkingTitle] = useState(false);
 
@@ -162,17 +181,21 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
       return [...prev, { ...emotion, intensity: 5 }];
     });
   };
-  
+
   const handleEmotionIntensityChange = (id: number, intensity: number) => {
     setSelectedEmotions((prev) =>
       prev.map((e) => (e.id === id ? { ...e, intensity } : e))
     );
   };
 
-  const suggestEmotionsWithAI = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const suggestEmotionsWithAI = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
     if (content.length < 50) {
-      setError("Please enter at least 50 characters in your dream description before suggesting emotions.");
+      setError(
+        "Please enter at least 50 characters in your dream description before suggesting emotions."
+      );
       return;
     }
     setIsAIThinkingEmotions(true);
@@ -185,44 +208,51 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
         },
         body: JSON.stringify({ content: content }),
       });
-    
+
       if (!response.ok) {
         throw new Error("Failed to suggest emotions");
       }
-    
+
       const data = await response.json();
       console.log("Suggested emotions:", data);
-    
+
       if (Array.isArray(data.suggested_emotions)) {
-        const newEmotions: Emotion[] = data.suggested_emotions.map((emotion: { name: string }) => ({
-          id: Date.now() + Math.random(),
-          name: emotion.name.charAt(0).toUpperCase() + emotion.name.slice(1),
-          isAISuggested: true
-        }));
-        
-        setAvailableEmotions(prevEmotions => {
+        const newEmotions: Emotion[] = data.suggested_emotions.map(
+          (emotion: { name: string }) => ({
+            id: Date.now() + Math.random(),
+            name: emotion.name.charAt(0).toUpperCase() + emotion.name.slice(1),
+            isAISuggested: true,
+          })
+        );
+
+        setAvailableEmotions((prevEmotions) => {
           const updatedEmotions = [...prevEmotions];
           newEmotions.forEach((newEmotion) => {
-            const existingIndex = updatedEmotions.findIndex(e => e.name.toLowerCase() === newEmotion.name.toLowerCase());
+            const existingIndex = updatedEmotions.findIndex(
+              (e) => e.name.toLowerCase() === newEmotion.name.toLowerCase()
+            );
             if (existingIndex === -1) {
               updatedEmotions.push(newEmotion);
             } else {
-              updatedEmotions[existingIndex] = { ...updatedEmotions[existingIndex], isAISuggested: true };
+              updatedEmotions[existingIndex] = {
+                ...updatedEmotions[existingIndex],
+                isAISuggested: true,
+              };
             }
           });
           return updatedEmotions;
         });
-  
-        setSelectedEmotions(prevSelected => {
+
+        setSelectedEmotions((prevSelected) => {
           const updatedSelected = [...prevSelected];
           newEmotions.forEach((newEmotion) => {
-            if (!updatedSelected.some(e => e.id === newEmotion.id)) {
-              updatedSelected.push({...newEmotion, intensity: 5});
+            if (!updatedSelected.some((e) => e.id === newEmotion.id)) {
+              updatedSelected.push({ ...newEmotion, intensity: 5 });
             }
           });
           return updatedSelected;
         });
-  
+
         setAiSuggestedEmotions(true);
       } else {
         console.error("Unexpected format for suggested emotions:", data);
@@ -235,10 +265,14 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
     }
   };
 
-  const suggestThemesWithAI = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const suggestThemesWithAI = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
     if (content.length < 50) {
-      setError("Please enter at least 50 characters in your dream description before suggesting themes.");
+      setError(
+        "Please enter at least 50 characters in your dream description before suggesting themes."
+      );
       return;
     }
     setIsAIThinking(true);
@@ -251,44 +285,49 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
         },
         body: JSON.stringify({ content: content }),
       });
-    
+
       if (!response.ok) {
         throw new Error("Failed to suggest themes");
       }
-    
+
       const data = await response.json();
       console.log("Suggested themes:", data);
-    
+
       if (Array.isArray(data.suggested_themes)) {
         const newThemes = data.suggested_themes.map((theme: string) => ({
           id: Date.now() + Math.random(),
           name: theme.charAt(0).toUpperCase() + theme.slice(1),
-          isAISuggested: true
+          isAISuggested: true,
         }));
-        
-        setAvailableThemes(prevThemes => {
+
+        setAvailableThemes((prevThemes) => {
           const updatedThemes = [...prevThemes];
           newThemes.forEach((newTheme: Theme) => {
-            const existingIndex = updatedThemes.findIndex(t => t.name.toLowerCase() === newTheme.name.toLowerCase());
+            const existingIndex = updatedThemes.findIndex(
+              (t) => t.name.toLowerCase() === newTheme.name.toLowerCase()
+            );
             if (existingIndex === -1) {
               updatedThemes.push(newTheme);
             } else {
-              updatedThemes[existingIndex] = { ...updatedThemes[existingIndex], isAISuggested: true };
+              updatedThemes[existingIndex] = {
+                ...updatedThemes[existingIndex],
+                isAISuggested: true,
+              };
             }
           });
           return updatedThemes;
         });
-  
-        setSelectedThemes(prevSelected => {
+
+        setSelectedThemes((prevSelected) => {
           const updatedSelected = [...prevSelected];
-          newThemes.forEach((newTheme: { name: string; }) => {
+          newThemes.forEach((newTheme: { name: string }) => {
             if (!updatedSelected.includes(newTheme.name)) {
               updatedSelected.push(newTheme.name);
             }
           });
           return updatedSelected;
         });
-  
+
         setAiSuggestedThemes(true);
       } else {
         console.error("Unexpected format for suggested themes:", data);
@@ -304,8 +343,8 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
   const handleThemeChange = (themeId: number, checked: boolean) => {
     const theme = availableThemes.find((t) => t.id === themeId);
     if (theme) {
-      setSelectedThemes(prev =>
-        checked ? [...prev, theme.name] : prev.filter(t => t !== theme.name)
+      setSelectedThemes((prev) =>
+        checked ? [...prev, theme.name] : prev.filter((t) => t !== theme.name)
       );
     }
   };
@@ -319,10 +358,14 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
     });
   };
 
-  const suggestTitleWithAI = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const suggestTitleWithAI = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
     if (content.length < 50) {
-      setError("Please enter at least 50 characters in your dream description before suggesting a title.");
+      setError(
+        "Please enter at least 50 characters in your dream description before suggesting a title."
+      );
       return;
     }
     setIsAIThinkingTitle(true);
@@ -335,11 +378,11 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
         },
         body: JSON.stringify({ content: content }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to suggest title");
       }
-  
+
       const data = await response.json();
       setTitle(data.suggested_title);
     } catch (error) {
@@ -357,7 +400,7 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
-        >
+      >
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
@@ -428,7 +471,11 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
                     <motion.div
                       className="w-4 h-4 border-t-2 border-b-2 border-current rounded-full"
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                     />
                   ) : (
                     <>
@@ -449,25 +496,27 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
                 <Sun className="mr-2" size={16} />
                 Dream Description
               </label>
-              <textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
-                className={`mt-1 block w-full rounded-md ${
-                  darkMode
-                    ? "bg-purple-800 border-purple-600 text-white"
-                    : "bg-purple-100 border-purple-300 text-purple-900"
-                } transition-colors duration-300`}
-                required
-              ></textarea>
-              <span
-                className={`absolute bottom-2 right-2 text-xs ${
-                  darkMode ? "text-purple-300" : "text-purple-600"
-                }`}
-              >
-                {content.length}
-              </span>
+              <div className="relative">
+                <textarea
+                  id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={4}
+                  className={`mt-1 block w-full rounded-md ${
+                    darkMode
+                      ? "bg-purple-800 border-purple-600 text-white"
+                      : "bg-purple-100 border-purple-300 text-purple-900"
+                  } transition-colors duration-300 pr-16`}
+                  required
+                ></textarea>
+                <span
+                  className={`absolute bottom-2 right-2 text-xs ${
+                    darkMode ? "text-purple-300" : "text-purple-600"
+                  }`}
+                >
+                  {content.length}
+                </span>
+              </div>
             </div>
             <div className="mb-4">
               <label
@@ -481,10 +530,20 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
                   onChange={(e) => setIsLucid(e.target.checked)}
                   className="sr-only"
                 />
-                <div className={`w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${isLucid ? (darkMode ? 'bg-green-400' : 'bg-green-600') : ''}`}>
-                  <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${isLucid ? 'translate-x-4' : ''}`}></div>
+                <div
+                  className={`w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
+                    isLucid ? (darkMode ? "bg-green-400" : "bg-green-600") : ""
+                  }`}
+                >
+                  <div
+                    className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
+                      isLucid ? "translate-x-4" : ""
+                    }`}
+                  ></div>
                 </div>
-                <span className="ml-3">Did you journey through a lucid dreamscape?</span>
+                <span className="ml-3">
+                  Did you journey through a lucid dreamscape?
+                </span>
               </label>
             </div>
             <div>
@@ -526,9 +585,15 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
               </div>
               <motion.button
                 onClick={suggestEmotionsWithAI}
-                disabled={content.length < 50 || isAIThinkingEmotions || aiSuggestedEmotions}
+                disabled={
+                  content.length < 50 ||
+                  isAIThinkingEmotions ||
+                  aiSuggestedEmotions
+                }
                 className={`text-xs ${
-                  content.length < 50 || isAIThinkingEmotions || aiSuggestedEmotions
+                  content.length < 50 ||
+                  isAIThinkingEmotions ||
+                  aiSuggestedEmotions
                     ? "bg-gray-400 cursor-not-allowed"
                     : darkMode
                     ? "bg-purple-600 hover:bg-purple-700"
@@ -536,7 +601,9 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
                 } text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 mt-2 mb-3 relative overflow-hidden`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                animate={isAIThinkingEmotions ? { opacity: 0.7 } : { opacity: 1 }}
+                animate={
+                  isAIThinkingEmotions ? { opacity: 0.7 } : { opacity: 1 }
+                }
               >
                 <motion.span
                   className="absolute inset-0 flex items-center justify-center"
@@ -546,14 +613,20 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
                   <motion.div
                     className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                 </motion.span>
                 <motion.span
                   initial={{ opacity: 1 }}
                   animate={{ opacity: isAIThinkingEmotions ? 0 : 1 }}
                 >
-                  {aiSuggestedEmotions ? "Emotions Suggested" : "Suggest Emotions with AI"}
+                  {aiSuggestedEmotions
+                    ? "Emotions Suggested"
+                    : "Suggest Emotions with AI"}
                 </motion.span>
                 <motion.div
                   className="absolute right-2 top-1/2 transform -translate-y-1/2"
@@ -602,7 +675,9 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
               </div>
               <motion.button
                 onClick={suggestThemesWithAI}
-                disabled={content.length < 50 || isAIThinking || aiSuggestedThemes}
+                disabled={
+                  content.length < 50 || isAIThinking || aiSuggestedThemes
+                }
                 className={`text-xs ${
                   content.length < 50 || isAIThinking || aiSuggestedThemes
                     ? "bg-gray-400 cursor-not-allowed"
@@ -622,14 +697,20 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCre
                   <motion.div
                     className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                 </motion.span>
                 <motion.span
                   initial={{ opacity: 1 }}
                   animate={{ opacity: isAIThinking ? 0 : 1 }}
                 >
-                  {aiSuggestedThemes ? "Themes Suggested" : "Suggest Themes with AI"}
+                  {aiSuggestedThemes
+                    ? "Themes Suggested"
+                    : "Suggest Themes with AI"}
                 </motion.span>
                 <motion.div
                   className="absolute right-2 top-1/2 transform -translate-y-1/2"
