@@ -9,9 +9,16 @@ import { useAuth } from "../AuthContext";
 import { useRouter } from "next/navigation";
 import { useDarkMode } from "../DarkModeContext";
 import MobileNavbar from "@/components/MobileNavbar";
+import { motion } from "framer-motion";
 
 const Dashboard = () => {
-  const [isSidebarPinned, setIsSidebarPinned] = useState(false);
+  const [isSidebarPinned, setIsSidebarPinned] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebarPinned');
+      return saved !== null ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
   const { user } = useAuth();
   const router = useRouter();
   const { darkMode } = useDarkMode();
@@ -63,13 +70,16 @@ const Dashboard = () => {
           }`}
         >
           <div className="flex justify-between items-center mb-6">
-            <h1
-              className={`text-3xl font-bold ${
+            <motion.h1
+              className={`text-3xl font-bold text-center w-full ${
                 darkMode ? "text-white" : "text-indigo-800"
-              } ${isMobile ? "text-center w-full" : ""}`}
+              } `}
+              initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
             >
               Dream Journal
-            </h1>
+            </motion.h1>
           </div>
           <div className="flex flex-col items-center gap-6">
             <div className="w-full lg:w-2/3 flex justify-center">

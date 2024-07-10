@@ -15,8 +15,22 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onPinChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPinned, setIsPinned] = useState(false);
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const pinned = localStorage.getItem('sidebarPinned');
+      return pinned !== null ? JSON.parse(pinned) : false;
+    }
+    return false;
+  });
+  
+  const [isPinned, setIsPinned] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebarPinned');
+      return saved !== null ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
+
   const [isUserSectionOpen, setIsUserSectionOpen] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -31,6 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onPinChange }) => {
     setIsPinned(newPinnedState);
     setIsOpen(true);
     onPinChange(newPinnedState);
+    localStorage.setItem('sidebarPinned', JSON.stringify(newPinnedState));
   };
 
   const toggleUserSection = () => {
@@ -43,23 +58,28 @@ const Sidebar: React.FC<SidebarProps> = ({ onPinChange }) => {
   };
   
 
-  useEffect(() => {
-    const handleMouseEnter = () => !isPinned && setIsOpen(true);
-    const handleMouseLeave = () => !isPinned && setIsOpen(false);
+useEffect(() => {
+  const handleMouseEnter = () => !isPinned && setIsOpen(true);
+  const handleMouseLeave = () => !isPinned && setIsOpen(false);
 
-    const sidebarElement = sidebarRef.current;
+  const sidebarElement = sidebarRef.current;
+  if (sidebarElement) {
+    sidebarElement.addEventListener('mouseenter', handleMouseEnter);
+    sidebarElement.addEventListener('mouseleave', handleMouseLeave);
+  }
+
+  // Set isOpen to true if sidebar is pinned
+  if (isPinned) {
+    setIsOpen(true);
+  }
+
+  return () => {
     if (sidebarElement) {
-      sidebarElement.addEventListener('mouseenter', handleMouseEnter);
-      sidebarElement.addEventListener('mouseleave', handleMouseLeave);
+      sidebarElement.removeEventListener('mouseenter', handleMouseEnter);
+      sidebarElement.removeEventListener('mouseleave', handleMouseLeave);
     }
-
-    return () => {
-      if (sidebarElement) {
-        sidebarElement.removeEventListener('mouseenter', handleMouseEnter);
-        sidebarElement.removeEventListener('mouseleave', handleMouseLeave);
-      }
-    };
-  }, [isPinned]);
+  };
+}, [isPinned]);
 
   return (
 <aside
