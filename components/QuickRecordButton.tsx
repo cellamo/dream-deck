@@ -28,7 +28,7 @@ const QuickRecordButton: React.FC<QuickRecordButtonProps> = ({ triggerRefresh })
     title: string;
     content: string;
     is_lucid: boolean;
-    emotions: { name: string; intensity: number }[];
+    emotions: { emotion: string; intensity: number }[]; // Updated property name
     themes: string[];
   }) => {
     // Handle dream creation logic here
