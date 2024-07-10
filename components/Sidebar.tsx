@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Book, Brain, Image as ImageIcon, Music, Users, Target, Moon, ChevronRight, HelpCircle, Settings, LogOut, Home, Pin } from 'lucide-react';
+import { Book, Brain, Image as ImageIcon, Music, Users, Target, Moon, ChevronRight, HelpCircle, Settings, LogOut, Home, Pin, Plus } from 'lucide-react';
 import { useAuth } from '../app/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useDarkMode } from '../app/DarkModeContext';
 import DarkModeToggle from './DarkModeToggle';
 import { usePathname } from 'next/navigation';
+import DreamRecordPopup from './DreamRecordPopup';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface SidebarProps {
   onPinChange: (isPinned: boolean) => void;
@@ -21,6 +23,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onPinChange }) => {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { darkMode } = useDarkMode();
   const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
+  const [isRecordDreamOpen, setIsRecordDreamOpen] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   const togglePin = () => {
     const newPinnedState = !isPinned;
@@ -57,8 +70,75 @@ const Sidebar: React.FC<SidebarProps> = ({ onPinChange }) => {
     };
   }, [isPinned]);
 
+
+  const menuItems = [
+    { href: '/dashboard', icon: Book, text: 'Journal' },
+    { href: '/analysis', icon: Brain, text: 'Analysis' },
+    { href: '/community', icon: Users, text: 'Community' },
+    { href: '/lucid-training', icon: Moon, text: 'Lucid' },
+  ];
+
+  const handleCreateDream = () => {
+    setIsRecordDreamOpen(true);
+  };
+
+  const handleDreamCreated = () => {
+    setIsRecordDreamOpen(false);
+    // Optionally, you can add logic here to refresh the dream list or navigate to the new dream
+  };
+
+  if (isMobile) {
+    return (
+      <>
+        <nav className={`fixed bottom-0 left-0 right-0 h-16 ${
+      darkMode ? 'bg-gray-900' : 'bg-white'
+    } flex justify-around items-center z-50`}>
+      {menuItems.map((item, index) => (
+        <React.Fragment key={item.href}>
+          {index === 2 && (
+            <div className="relative -top-8">
+              <motion.button
+                onClick={handleCreateDream}
+                className={`w-16 h-16 rounded-full ${
+                  darkMode ? 'bg-purple-600' : 'bg-indigo-500'
+                } flex items-center justify-center shadow-lg`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  background: 'linear-gradient(135deg, #8a2be2, #4b0082)',
+                  boxShadow: '0 4px 10px rgba(138, 43, 226, 0.5)'
+                }}
+              >
+                <Plus size={32} color="white" />
+              </motion.button>
+            </div>
+          )}
+          <Link href={item.href}>
+            <motion.div
+              className="flex flex-col items-center"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <item.icon size={24} className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
+              <span className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{item.text}</span>
+            </motion.div>
+          </Link>
+        </React.Fragment>
+      ))}
+    </nav>
+        <AnimatePresence>
+          {isRecordDreamOpen && (
+            <DreamRecordPopup
+              onClose={() => setIsRecordDreamOpen(false)}
+              onDreamCreated={handleDreamCreated}
+            />
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
   return (
-    <aside
+<aside
       ref={sidebarRef}
       className={`fixed top-0 left-0 h-screen ${
         darkMode
@@ -202,5 +282,35 @@ const SidebarLink: React.FunctionComponent<SidebarLinkProps> = ({ href, icon: Ic
   </li>
 );
 
+const CircularMenuItem: React.FC<{
+  href: string;
+  icon: any;
+  text: string;
+  index: number;
+  total: number;
+  darkMode: boolean;
+}> = ({ href, icon: Icon, text, index, total, darkMode }) => {
+  const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
+  const radius = 120; // Adjust this value to change the size of the circular menu
+
+  return (
+    <Link href={href}>
+      <motion.div
+        className={`absolute flex flex-col items-center justify-center w-16 h-16 rounded-full ${
+          darkMode ? 'bg-purple-800 text-white' : 'bg-indigo-100 text-indigo-800'
+        }`}
+        style={{
+          left: `calc(50% + ${Math.cos(angle) * radius}px - 32px)`,
+          top: `calc(50% + ${Math.sin(angle) * radius}px - 32px)`,
+        }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Icon size={24} />
+        <span className="text-xs mt-1">{text}</span>
+      </motion.div>
+    </Link>
+  );
+};
 
 export default Sidebar;

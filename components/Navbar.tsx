@@ -183,7 +183,7 @@ const Navbar: React.FC = () => {
               px-2 pt-2 pb-3 space-y-1 sm:px-3 ${
                 darkMode
                   ? "bg-gray-900/95 shadow-lg"
-                  : "bg-white/95 shadow-lg"
+                  : "bg-gradient-to-r from-pink-100 via-purple-100 to-indigo-100 shadow-lg"
               }
               transition-all duration-300 ease-in-out
               ${
@@ -198,6 +198,9 @@ const Navbar: React.FC = () => {
             <MobileNavLink href="#how-it-works">How It Works</MobileNavLink>
             <MobileNavLink href="#pricing">Pricing</MobileNavLink>
             <MobileNavLink href="#contact">Contact</MobileNavLink>
+            <div className="px-3 py-2">
+              <DarkModeToggle />
+            </div>
             {user ? (
               <>
                 <div className={`px-3 py-2 text-sm ${darkMode ? "text-purple-300" : "text-purple-600"} border-b ${darkMode ? "border-purple-700" : "border-purple-200"}`}>
