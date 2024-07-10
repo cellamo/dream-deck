@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Wind, Zap, Sparkles } from 'lucide-react';
@@ -61,7 +60,7 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({ onConfirm, onCa
           Dissolve This Dream?
         </h3>
         <p className={`text-sm mb-4 ${darkMode ? 'text-purple-200' : 'text-indigo-700'}`}>
-          Once gone, it can't be recaptured.
+          Once gone, it can&apos;t be recaptured.
         </p>
         <div className="flex justify-center space-x-2">
           <motion.button

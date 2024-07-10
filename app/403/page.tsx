@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -47,7 +46,7 @@ export default function NotAuthorized() {
         </div>
         <h1 className="text-6xl font-bold mb-4">403</h1>
         <h2 className="text-3xl font-semibold mb-6">Access Denied</h2>
-        <p className="text-xl mb-8">Oops! You don't have permission to enter this dream realm.</p>
+        <p className="text-xl mb-8">Oops! You don&apos;t have permission to enter this dream realm.</p>
         
         <motion.div
           initial={{ scale: 0 }}
