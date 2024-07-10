@@ -24,7 +24,7 @@ const Dashboard = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
 
-  useEffect(() => {
+/*   useEffect(() => {
     const delay = setTimeout(() => {
       if (!user) {
         router.push("/403");
@@ -32,7 +32,7 @@ const Dashboard = () => {
     }, 50);
 
     return () => clearTimeout(delay);
-  }, [user, router]);
+  }, [user, router]); */
 
   return (
       <div className={`min-h-screen ${
@@ -58,9 +58,11 @@ const Dashboard = () => {
             </div>
           </main>
         </div>
-        <QuickRecordButton triggerRefresh={triggerRefresh} />
-      </div>
-  );
+              <div className="hidden md:block">
+                <QuickRecordButton triggerRefresh={triggerRefresh} />
+              </div>  
+              </div>
+              );
 };
 
 export default Dashboard;

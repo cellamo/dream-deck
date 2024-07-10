@@ -24,6 +24,14 @@ export default function Home() {
     router.push('/auth');
   };
 
+  const handleGetStarted = () => {
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      router.push('/auth');
+    }
+  };
+  
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-b from-gray-950 via-purple-800 to-blue-900' : 'bg-gradient-to-br from-pink-50 via-purple-300 to-indigo-300'} text-gray-900 dark:text-white`}>
       <Navbar />
@@ -33,10 +41,10 @@ export default function Home() {
         <h1 className="text-5xl md:text-6xl font-extrabold mb-4 animate-fade-in-down-slow bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-pink-800">
           Unlock the Power of Your Dreams
         </h1>
-        <p className={`text-xl md:text-2xl mb-8 ${darkMode ? 'text-purple-200' : 'text-indigo-700'} animate-fade-in-up-slow`}>
+        <p className={`text-xl md:text-2xl mb-8 ${darkMode ? 'text-purple-200' : 'text-indigo-700'} animate-fade-in-up-slow`}>s
           Record, analyze, and visualize your dreams with AI-powered insights
         </p>
-        <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+        <button onClick={handleGetStarted} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">
           Get Started
         </button>
       </AnimatedSection>
