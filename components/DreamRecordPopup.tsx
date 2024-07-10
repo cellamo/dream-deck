@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  X,
-  Cloud,
-  Sparkles,
-  Moon,
-  Sun,
-  Star,
-  Feather,
-  Volume2,
-  Tag,
-  Heart,
-} from "lucide-react";
+import { X, Cloud, Sparkles, Moon, Sun, Star, Feather, Volume2, Tag, Heart } from "lucide-react";
 import { useDarkMode } from "@/app/DarkModeContext";
 import { ENDPOINTS } from "@/app/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,22 +31,15 @@ interface Theme {
   isAISuggested?: boolean;
 }
 
-const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
-  onClose,
-  onDreamCreated,
-}) => {
+const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({ onClose, onDreamCreated }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isLucid, setIsLucid] = useState(false);
 
-  const [emotions, setEmotions] = useState<
-    { emotion: string; intensity: number }[]
-  >([]);
-
+  const [emotions, setEmotions] = useState<{ emotion: string; intensity: number }[]>([]);
   const [themes, setThemes] = useState<string[]>([]);
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
-
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -65,6 +47,11 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
   
   const [selectedEmotions, setSelectedEmotions] = useState<SelectedEmotion[]>([]);
   const [availableEmotions, setAvailableEmotions] = useState<Emotion[]>([]);
+  const [isAIThinking, setIsAIThinking] = useState(false);
+  const [isAIThinkingEmotions, setIsAIThinkingEmotions] = useState(false);
+  const [aiSuggestedEmotions, setAiSuggestedEmotions] = useState<boolean>(false);
+  const [aiSuggestedThemes, setAiSuggestedThemes] = useState<boolean>(false);
+  const [isAIThinkingTitle, setIsAIThinkingTitle] = useState(false);
 
   useEffect(() => {
     fetchEmotionsAndThemes();
@@ -99,7 +86,7 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
       title,
       content,
       is_lucid: isLucid,
-      audio_recording: null, // We'll handle this separately if there's an audio recording
+      audio_recording: null,
       emotions: selectedEmotions.map((e) => ({
         name: e.name,
         intensity: e.intensity,
@@ -112,8 +99,6 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
       if (audioBlob) {
         const formData = new FormData();
         formData.append("audio_recording", audioBlob, "dream_recording.webm");
-
-        // Append the JSON data as a string
         formData.append("data", JSON.stringify(dreamData));
 
         response = await fetch(ENDPOINTS.DREAMS, {
@@ -174,21 +159,15 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
       if (existing) {
         return prev.filter((e) => e.id !== emotion.id);
       }
-      return [...prev, { ...emotion, intensity: 5 }]; // Add default intensity when selecting
+      return [...prev, { ...emotion, intensity: 5 }];
     });
   };
-  
   
   const handleEmotionIntensityChange = (id: number, intensity: number) => {
     setSelectedEmotions((prev) =>
       prev.map((e) => (e.id === id ? { ...e, intensity } : e))
     );
   };
-
-  const [isAIThinking, setIsAIThinking] = useState(false);
-  const [isAIThinkingEmotions, setIsAIThinkingEmotions] = useState(false);
-
-  const [aiSuggestedEmotions, setAiSuggestedEmotions] = useState<boolean>(false);
 
   const suggestEmotionsWithAI = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -216,8 +195,8 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
     
       if (Array.isArray(data.suggested_emotions)) {
         const newEmotions: Emotion[] = data.suggested_emotions.map((emotion: { name: string }) => ({
-          id: Date.now() + Math.random(), // Generate a unique id
-          name: emotion.name.charAt(0).toUpperCase() + emotion.name.slice(1), // Capitalize first letter
+          id: Date.now() + Math.random(),
+          name: emotion.name.charAt(0).toUpperCase() + emotion.name.slice(1),
           isAISuggested: true
         }));
         
@@ -234,12 +213,11 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
           return updatedEmotions;
         });
   
-        // Automatically select AI-suggested emotions
         setSelectedEmotions(prevSelected => {
           const updatedSelected = [...prevSelected];
           newEmotions.forEach((newEmotion) => {
             if (!updatedSelected.some(e => e.id === newEmotion.id)) {
-              updatedSelected.push({...newEmotion, intensity: 5}); // Add default intensity when selecting
+              updatedSelected.push({...newEmotion, intensity: 5});
             }
           });
           return updatedSelected;
@@ -256,10 +234,6 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
       setIsAIThinkingEmotions(false);
     }
   };
-  
-  
-
-  const [aiSuggestedThemes, setAiSuggestedThemes] = useState<boolean>(false);
 
   const suggestThemesWithAI = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -287,8 +261,8 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
     
       if (Array.isArray(data.suggested_themes)) {
         const newThemes = data.suggested_themes.map((theme: string) => ({
-          id: Date.now() + Math.random(), // Generate a unique id
-          name: theme.charAt(0).toUpperCase() + theme.slice(1), // Capitalize first letter
+          id: Date.now() + Math.random(),
+          name: theme.charAt(0).toUpperCase() + theme.slice(1),
           isAISuggested: true
         }));
         
@@ -305,7 +279,6 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
           return updatedThemes;
         });
   
-        // Automatically select AI-suggested themes
         setSelectedThemes(prevSelected => {
           const updatedSelected = [...prevSelected];
           newThemes.forEach((newTheme: { name: string; }) => {
@@ -345,8 +318,6 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
       return [...prev, theme.name];
     });
   };
-
-  const [isAIThinkingTitle, setIsAIThinkingTitle] = useState(false);
 
   const suggestTitleWithAI = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -393,8 +364,8 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
           exit={{ scale: 0.9, y: 20 }}
           className={`${
             darkMode ? "bg-purple-900" : "bg-white"
-          } rounded-lg p-6 w-full max-w-md relative overflow-hidden z-[70]`}
-          >
+          } rounded-lg p-4 sm:p-6 w-full max-w-[90%] sm:max-w-md relative overflow-hidden z-[70]`}
+        >
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500"></div>
           <div className="flex justify-between items-center mb-4">
             <h2
@@ -417,63 +388,57 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-  <label
-    htmlFor="title"
-    className={`block text-sm font-medium ${
-      darkMode ? "text-purple-200" : "text-purple-700"
-    } flex items-center`}
-  >
-    <Moon className="mr-2" size={16} />
-    Dream Title
-  </label>
-  <div className="mt-1 flex rounded-md shadow-sm">
-    <input
-      type="text"
-      id="title"
-      value={title}
-      onChange={(e) => setTitle(e.target.value)}
-      className={`flex-grow rounded-l-md ${
-        darkMode
-          ? "bg-purple-800 border-purple-600 text-white"
-          : "bg-purple-100 border-purple-300 text-purple-900"
-      } transition-colors duration-300`}
-      required
-    />
-    <motion.button
-      onClick={suggestTitleWithAI}
-      disabled={content.length < 50 || isAIThinkingTitle}
-
-      className={`inline-flex items-center px-3 rounded-r-md border border-l-0 ${
-        content.length < 50 || isAIThinkingTitle
-
-          ? "text-gray-400 cursor-not-allowed"
-          : darkMode
-
-
-
-          ? "text-purple-600 hover:text-purple-700"
-          : "text-purple-400 hover:text-purple-500"
-      } text-sm transition-colors duration-300`}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-    >
-      {isAIThinkingTitle ? (
-        <motion.div
-
-          className="w-4 h-4 border-t-2 border-b-2 border-current rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        />
-      ) : (
-        <>
-          Suggest
-          <Sparkles size={12} className="ml-1 text-yellow-300" />
-        </>
-      )}
-    </motion.button>
-  </div>
-</div>
+            <div className="relative">
+              <label
+                htmlFor="title"
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-purple-200" : "text-purple-700"
+                } flex items-center`}
+              >
+                <Moon className="mr-2" size={16} />
+                Dream Title
+              </label>
+              <div className="mt-1 flex rounded-md shadow-sm">
+                <input
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={`flex-grow rounded-l-md ${
+                    darkMode
+                      ? "bg-purple-800 border-purple-600 text-white"
+                      : "bg-purple-100 border-purple-300 text-purple-900"
+                  } transition-colors duration-300`}
+                  required
+                />
+                <motion.button
+                  onClick={suggestTitleWithAI}
+                  disabled={content.length < 50 || isAIThinkingTitle}
+                  className={`inline-flex items-center px-3 rounded-r-md border-l-0 ${
+                    content.length < 50 || isAIThinkingTitle
+                      ? "text-gray-400 cursor-not-allowed"
+                      : darkMode
+                      ? "bg-purple-800 border-purple-600 text-white"
+                      : "bg-purple-100 border-purple-300 text-purple-900"
+                  } text-sm transition-colors duration-300`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {isAIThinkingTitle ? (
+                    <motion.div
+                      className="w-4 h-4 border-t-2 border-b-2 border-current rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                  ) : (
+                    <>
+                      Suggest
+                      <Sparkles size={12} className="ml-1 text-yellow-300" />
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </div>
             <div>
               <label
                 htmlFor="content"
@@ -523,159 +488,159 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
               </label>
             </div>
             <div>
-  <label
-    className={`block text-sm font-medium ${
-      darkMode ? "text-purple-200" : "text-purple-700"
-    } flex items-center mb-4`}
-  >
-    <Cloud className="mr-2" size={16} />
-    Emotions
-  </label>
-  <div className="flex flex-wrap gap-2 mb-4">
-  {availableEmotions.map((emotion) => (
-    <button
-      key={emotion.id}
-      type="button"
-      onClick={() => handleEmotionSelect(emotion)}
-      className={`px-3 py-1 rounded-full text-sm ${
-        selectedEmotions.some((e) => e.id === emotion.id)
-          ? "bg-purple-600 text-white"
-          : darkMode
-          ? "bg-purple-800 text-purple-200"
-          : "bg-purple-100 text-purple-700"
-      } transition-colors duration-300 flex items-center`}
-    >
-      {selectedEmotions.some((e) => e.id === emotion.id) ? (
-        <X className="inline-block mr-1" size={12} />
-      ) : (
-        <Heart className="inline-block mr-1" size={12} />
-      )}
-      {emotion.name}
-      {emotion.isAISuggested !== undefined && (
-        <>
-          <Sparkles size={12} className="ml-1 text-yellow-400" />
-        </>
-      )}
-    </button>
-  ))}
-</div>
-<motion.button
-  onClick={suggestEmotionsWithAI}
-  disabled={content.length < 50 || isAIThinkingEmotions || aiSuggestedEmotions}
-  className={`text-xs ${
-    content.length < 50 || isAIThinkingEmotions || aiSuggestedEmotions
-      ? "bg-gray-400 cursor-not-allowed"
-      : darkMode
-      ? "bg-purple-600 hover:bg-purple-700"
-      : "bg-purple-400 hover:bg-purple-500"
-  } text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 mt-2 mb-3 relative overflow-hidden`}
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.95 }}
-  animate={isAIThinkingEmotions ? { opacity: 0.7 } : { opacity: 1 }}
->
-  <motion.span
-    className="absolute inset-0 flex items-center justify-center"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: isAIThinkingEmotions ? 1 : 0 }}
-  >
-    <motion.div
-      className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full"
-      animate={{ rotate: 360 }}
-      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-    />
-  </motion.span>
-  <motion.span
-    initial={{ opacity: 1 }}
-    animate={{ opacity: isAIThinkingEmotions ? 0 : 1 }}
-  >
-    {aiSuggestedEmotions ? "Emotions Suggested" : "Suggest Emotions with AI"}
-  </motion.span>
-  <motion.div
-    className="absolute right-2 top-1/2 transform -translate-y-1/2"
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ delay: 0.2 }}
-  >
-    <Sparkles size={16} className="text-yellow-300" />
-  </motion.div>
-</motion.button>
-</div>
+              <label
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-purple-200" : "text-purple-700"
+                } flex items-center mb-4`}
+              >
+                <Cloud className="mr-2" size={16} />
+                Emotions
+              </label>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {availableEmotions.map((emotion) => (
+                  <button
+                    key={emotion.id}
+                    type="button"
+                    onClick={() => handleEmotionSelect(emotion)}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      selectedEmotions.some((e) => e.id === emotion.id)
+                        ? "bg-purple-600 text-white"
+                        : darkMode
+                        ? "bg-purple-800 text-purple-200"
+                        : "bg-purple-100 text-purple-700"
+                    } transition-colors duration-300 flex items-center`}
+                  >
+                    {selectedEmotions.some((e) => e.id === emotion.id) ? (
+                      <X className="inline-block mr-1" size={12} />
+                    ) : (
+                      <Heart className="inline-block mr-1" size={12} />
+                    )}
+                    {emotion.name}
+                    {emotion.isAISuggested !== undefined && (
+                      <>
+                        <Sparkles size={12} className="ml-1 text-yellow-400" />
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <motion.button
+                onClick={suggestEmotionsWithAI}
+                disabled={content.length < 50 || isAIThinkingEmotions || aiSuggestedEmotions}
+                className={`text-xs ${
+                  content.length < 50 || isAIThinkingEmotions || aiSuggestedEmotions
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : darkMode
+                    ? "bg-purple-600 hover:bg-purple-700"
+                    : "bg-purple-400 hover:bg-purple-500"
+                } text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 mt-2 mb-3 relative overflow-hidden`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                animate={isAIThinkingEmotions ? { opacity: 0.7 } : { opacity: 1 }}
+              >
+                <motion.span
+                  className="absolute inset-0 flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: isAIThinkingEmotions ? 1 : 0 }}
+                >
+                  <motion.div
+                    className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: isAIThinkingEmotions ? 0 : 1 }}
+                >
+                  {aiSuggestedEmotions ? "Emotions Suggested" : "Suggest Emotions with AI"}
+                </motion.span>
+                <motion.div
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Sparkles size={16} className="text-yellow-300" />
+                </motion.div>
+              </motion.button>
+            </div>
             <div>
-  <label
-    className={`block text-sm font-medium ${
-      darkMode ? "text-purple-200" : "text-purple-700"
-    } flex items-center mb-4`}
-  >
-    <Star className="mr-2" size={16} />
-    Themes
-  </label>
-  <div className="flex flex-wrap gap-2 mb-4">
-    {availableThemes.map((theme) => (
-      <button
-        key={theme.id}
-        type="button"
-        onClick={() => handleThemeSelect(theme)}
-        className={`px-3 py-1 rounded-full text-sm ${
-          selectedThemes.includes(theme.name)
-            ? "bg-purple-600 text-white"
-            : darkMode
-            ? "bg-purple-800 text-purple-200"
-            : "bg-purple-100 text-purple-700"
-        } transition-colors duration-300 flex items-center`}
-      >
-        {selectedThemes.includes(theme.name) ? (
-          <X className="inline-block mr-1" size={12} />
-        ) : (
-          <Tag className="inline-block mr-1" size={12} />
-        )}
-        {theme.name}
-        {theme.isAISuggested && (
-          <Sparkles size={12} className="ml-1 text-yellow-400" />
-        )}
-      </button>
-    ))}
-  </div>
-  <motion.button
-  onClick={suggestThemesWithAI}
-  disabled={content.length < 50 || isAIThinking || aiSuggestedThemes}
-  className={`text-xs ${
-    content.length < 50 || isAIThinking || aiSuggestedThemes
-      ? "bg-gray-400 cursor-not-allowed"
-      : darkMode
-      ? "bg-purple-600 hover:bg-purple-700"
-      : "bg-purple-400 hover:bg-purple-500"
-  } text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 mt-2 mb-3 relative overflow-hidden`}
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.95 }}
-  animate={isAIThinking ? { opacity: 0.7 } : { opacity: 1 }}
->
-  <motion.span
-    className="absolute inset-0 flex items-center justify-center"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: isAIThinking ? 1 : 0 }}
-  >
-    <motion.div
-      className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full"
-      animate={{ rotate: 360 }}
-      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-    />
-  </motion.span>
-  <motion.span
-    initial={{ opacity: 1 }}
-    animate={{ opacity: isAIThinking ? 0 : 1 }}
-  >
-    {aiSuggestedThemes ? "Themes Suggested" : "Suggest Themes with AI"}
-  </motion.span>
-  <motion.div
-    className="absolute right-2 top-1/2 transform -translate-y-1/2"
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ delay: 0.2 }}
-  >
-    <Sparkles size={16} className="text-yellow-300" />
-  </motion.div>
-</motion.button>
-</div>
+              <label
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-purple-200" : "text-purple-700"
+                } flex items-center mb-4`}
+              >
+                <Star className="mr-2" size={16} />
+                Themes
+              </label>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {availableThemes.map((theme) => (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    onClick={() => handleThemeSelect(theme)}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      selectedThemes.includes(theme.name)
+                        ? "bg-purple-600 text-white"
+                        : darkMode
+                        ? "bg-purple-800 text-purple-200"
+                        : "bg-purple-100 text-purple-700"
+                    } transition-colors duration-300 flex items-center`}
+                  >
+                    {selectedThemes.includes(theme.name) ? (
+                      <X className="inline-block mr-1" size={12} />
+                    ) : (
+                      <Tag className="inline-block mr-1" size={12} />
+                    )}
+                    {theme.name}
+                    {theme.isAISuggested && (
+                      <Sparkles size={12} className="ml-1 text-yellow-400" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <motion.button
+                onClick={suggestThemesWithAI}
+                disabled={content.length < 50 || isAIThinking || aiSuggestedThemes}
+                className={`text-xs ${
+                  content.length < 50 || isAIThinking || aiSuggestedThemes
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : darkMode
+                    ? "bg-purple-600 hover:bg-purple-700"
+                    : "bg-purple-400 hover:bg-purple-500"
+                } text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 mt-2 mb-3 relative overflow-hidden`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                animate={isAIThinking ? { opacity: 0.7 } : { opacity: 1 }}
+              >
+                <motion.span
+                  className="absolute inset-0 flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: isAIThinking ? 1 : 0 }}
+                >
+                  <motion.div
+                    className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: isAIThinking ? 0 : 1 }}
+                >
+                  {aiSuggestedThemes ? "Themes Suggested" : "Suggest Themes with AI"}
+                </motion.span>
+                <motion.div
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Sparkles size={16} className="text-yellow-300" />
+                </motion.div>
+              </motion.button>
+            </div>
 
             {error && (
               <motion.p
