@@ -71,6 +71,23 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
     useState<boolean>(false);
   const [aiSuggestedThemes, setAiSuggestedThemes] = useState<boolean>(false);
   const [isAIThinkingTitle, setIsAIThinkingTitle] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
 
   useEffect(() => {
     fetchEmotionsAndThemes();
@@ -402,6 +419,7 @@ const DreamRecordPopup: React.FC<DreamRecordPopupProps> = ({
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
       >
         <motion.div
+          ref={popupRef}
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
