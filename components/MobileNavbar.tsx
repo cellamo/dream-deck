@@ -12,6 +12,14 @@ const MobileNavbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
 
+  // for testing
+  const [isNavbarTransparent, setIsNavbarTransparent] = useState(false);
+
+  const toggleNavbarOpacity = () => {
+    setIsNavbarTransparent(prev => !prev);
+  };
+  // for testing
+
   const menuItems = [
     { href: "/dashboard", icon: Book, text: "Journal" },
     { href: "/analysis", icon: Brain, text: "Analysis" },
@@ -30,8 +38,8 @@ const MobileNavbar: React.FC = () => {
   return (
     <>
       <nav className={`fixed bottom-4 left-4 right-4 h-16 ${
-  darkMode ? 'bg-gray-900/80' : 'bg-white/80'
-} backdrop-lg rounded-full flex justify-around items-center z-50 shadow-lg`}>
+  darkMode ? 'bg-gray-900' : 'bg-white'
+} ${isNavbarTransparent ? 'bg-opacity-100' : 'bg-opacity-80'} backdrop-lg rounded-full flex justify-around items-center z-50 shadow-lg`}>
         {menuItems.map((item, index) => (
           <React.Fragment key={item.href}>
             {index === 2 && (
@@ -91,6 +99,12 @@ const MobileNavbar: React.FC = () => {
 
           </React.Fragment>
         ))}
+        <button
+    onClick={toggleNavbarOpacity}
+    className="absolute top-0 right-6 -translate-y-full p-1 rounded-t-md bg-purple-500 text-white text-xs"
+  >
+    {isNavbarTransparent ? 'Show' : 'Hide'}
+  </button>
       </nav>
       <AnimatePresence>
         {isRecordDreamOpen && (
