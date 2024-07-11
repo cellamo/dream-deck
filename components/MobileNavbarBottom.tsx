@@ -29,9 +29,9 @@ const MobileNavbar: React.FC = () => {
 
   return (
     <>
-      <nav className={`fixed bottom-4 left-4 right-4 h-16 ${
-  darkMode ? 'bg-gray-900/80' : 'bg-white/80'
-} backdrop-lg rounded-full flex justify-around items-center z-50 shadow-lg`}>
+      <nav className={`fixed bottom-0 w-full h-16  ${
+  darkMode ? 'bg-gray-900/100' : 'bg-white/80'
+} backdrop-lg flex justify-around items-center z-50 shadow-lg`}>
         {menuItems.map((item, index) => (
           <React.Fragment key={item.href}>
             {index === 2 && (

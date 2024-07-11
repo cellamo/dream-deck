@@ -75,7 +75,7 @@ const AnalysisCard: React.FC<{ title: string; icon: React.ReactNode; description
     <motion.div 
       className={`p-6 rounded-lg shadow-lg ${
         darkMode 
-          ? 'bg-purple-900/30 backdrop-blur-lg' 
+          ? 'bg-purple-900/30 backdrop-lg' 
           : 'bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200'
       }`}
       whileHover={{ scale: 1.05 }}
