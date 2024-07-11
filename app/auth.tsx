@@ -8,6 +8,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthContext";
 import { ENDPOINTS } from "./api";
+import { useDarkMode } from "./DarkModeContext";
 
 const isAtLeast18YearsOld = (birthday: string): boolean => {
   const today = new Date();
@@ -34,7 +35,17 @@ const InputField: React.FC<{
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   icon: React.ReactNode;
   required?: boolean;
-}> = ({ id, type, placeholder, value, onChange, icon, required = true }) => (
+  darkMode?: boolean;
+}> = ({
+  id,
+  type,
+  placeholder,
+  value,
+  onChange,
+  icon,
+  required = true,
+  darkMode,
+}) => (
   <div className="relative">
     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
       {icon}
@@ -43,7 +54,11 @@ const InputField: React.FC<{
       id={id}
       type={type}
       required={required}
-      className="bg-purple-900/70 text-white placeholder-purple-300 w-full pl-10 pr-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+      className={`${
+        darkMode
+          ? "bg-purple-900/70 text-white placeholder-purple-300"
+          : "bg-gray-100 text-gray-900 placeholder-gray-500"
+      } w-full pl-10 pr-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
@@ -58,6 +73,7 @@ MemoizedInputField.displayName = "InputField";
 const AuthPage: React.FC = () => {
   const router = useRouter();
   const { setUser } = useAuth();
+  const { darkMode } = useDarkMode();
 
   const [error, setError] = useState<string | null>(null);
 
@@ -217,11 +233,16 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  const PasswordCriterion: React.FC<{ met: boolean; text: string }> = ({
-    met,
-    text,
-  }) => (
-    <div className="flex items-center text-purple-200">
+  const PasswordCriterion: React.FC<{
+    met: boolean;
+    text: string;
+    darkMode: boolean;
+  }> = ({ met, text, darkMode }) => (
+    <div
+      className={`flex items-center ${
+        darkMode ? "text-smoke-white" : "text-purple-800"
+      }`}
+    >
       {met ? (
         <Lock className="mr-2 text-green-500" size={16} />
       ) : (
@@ -262,7 +283,13 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-800 to-blue-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div
+      className={`min-h-screen ${
+        darkMode
+          ? "bg-gradient-to-b from-gray-900 via-purple-800 to-blue-900"
+          : "bg-gradient-to-b from-blue-100 via-purple-200 to-pink-100"
+      } flex flex-col justify-center py-12 sm:px-6 lg:px-8`}
+    >
       {error && <DreamError message={error} />}
       <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="flex justify-center">
@@ -274,13 +301,32 @@ const AuthPage: React.FC = () => {
             className="opacity-80 hover:opacity-100 transition-opacity duration-300"
           />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-          {isLogin ? "Sign in to DreamDeck" : "Create your DreamDeck account"}
+        <h2
+          className={`mt-6 text-center text-3xl font-extrabold font-quicksand
+  ${
+    darkMode
+      ? "text-purple-200 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-400"
+      : "text-indigo-800 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600"
+  } tracking-wide`}
+        >
+          {isLogin ? (
+            <>
+              Welcome back,
+              <br />
+              Dreamer
+            </>
+          ) : (
+            "Begin Your Dream Journey"
+          )}
         </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="bg-purple-950 py-8 px-6 shadow-xl sm:rounded-lg sm:px-10">
+        <div
+          className={`${
+            darkMode ? "bg-purple-950" : "bg-white"
+          } py-8 px-6 shadow-xl sm:rounded-lg sm:px-10`}
+        >
           <form className="space-y-6" onSubmit={handleSubmit}>
             {!isLogin && (
               <>
@@ -347,22 +393,27 @@ const AuthPage: React.FC = () => {
                     <PasswordCriterion
                       met={passwordCriteria.length}
                       text="At least 8 characters long"
+                      darkMode={darkMode}
                     />
                     <PasswordCriterion
                       met={passwordCriteria.uppercase}
                       text="Contains uppercase letter"
+                      darkMode={darkMode}
                     />
                     <PasswordCriterion
                       met={passwordCriteria.lowercase}
                       text="Contains lowercase letter"
+                      darkMode={darkMode}
                     />
                     <PasswordCriterion
                       met={passwordCriteria.number}
                       text="Contains number"
+                      darkMode={darkMode}
                     />
                     <PasswordCriterion
                       met={passwordCriteria.special}
                       text="Contains special character"
+                      darkMode={darkMode}
                     />
                   </div>
                 </div>
@@ -371,7 +422,11 @@ const AuthPage: React.FC = () => {
             <div>
               <button
                 type="submit"
-                className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-md text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 ease-in-out transform hover:scale-105 group"
+                className={`w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-md text-sm font-medium text-white ${
+                  darkMode
+                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                    : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 ease-in-out transform hover:scale-105 group`}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -394,7 +449,13 @@ const AuthPage: React.FC = () => {
                 <div className="w-full border-t border-purple-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-purple-950 text-purple-300">
+                <span
+                  className={`px-2 ${
+                    darkMode
+                      ? "bg-purple-950 text-purple-300"
+                      : "bg-white text-purple-600"
+                  }`}
+                >
                   Or continue with
                 </span>
               </div>
@@ -417,7 +478,11 @@ const AuthPage: React.FC = () => {
           <div className="mt-6">
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="w-full text-center text-sm text-purple-300 hover:text-purple-200"
+              className={`w-full text-center text-sm ${
+                darkMode
+                  ? "text-purple-300 hover:text-purple-200"
+                  : "text-purple-600 hover:text-purple-700"
+              }`}
             >
               {isLogin
                 ? "Need an account? Sign up"
@@ -448,15 +513,32 @@ const AuthPage: React.FC = () => {
 export default AuthPage;
 
 const DreamError: React.FC<{ message: string }> = ({ message }) => {
+  const { darkMode } = useDarkMode();
   return (
     <div className="fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
-      <div className="bg-gradient-to-r from-purple-900/80 to-indigo-900/80 backdrop-blur-md p-4 rounded-lg shadow-lg border border-purple-500/50 animate-float">
+      <div
+        className={`${
+          darkMode
+            ? "bg-gradient-to-r from-purple-900/80 to-indigo-900/80"
+            : "bg-gradient-to-r from-purple-100/80 to-indigo-100/80"
+        } backdrop-blur-md p-4 rounded-lg shadow-lg border border-purple-500/50 animate-float`}
+      >
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <Brain className="h-6 w-6 text-purple-300 animate-pulse" />
+            <Brain
+              className={`h-6 w-6 ${
+                darkMode ? "text-purple-300" : "text-purple-600"
+              } animate-pulse`}
+            />
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-purple-100">{message}</p>
+            <p
+              className={`text-sm font-medium ${
+                darkMode ? "text-purple-100" : "text-purple-800"
+              }`}
+            >
+              {message}
+            </p>
           </div>
         </div>
       </div>
