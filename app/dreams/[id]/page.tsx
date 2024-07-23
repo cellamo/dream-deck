@@ -13,18 +13,38 @@ import {
   MessageCircle,
   Edit3,
   Brain,
+  AlertCircle,
+  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { ENDPOINTS } from "@/app/api";
+import DreamInterpretation from "@/components/DreamInterpretation";
 interface Dream {
   id: string;
   title: string;
   content: string;
   date: string;
   isLucid: boolean;
-  emotions: { name: string; intensity: number }[];
+  audioUrl: string | null;
+  emotions: Array<{ name: string; intensity: number }>;
   themes: string[];
-  audioUrl?: string;
+  insights: DreamInsight | null;
+}
+
+interface DreamInsight {
+  summary: string;
+  analysis: {
+    dream_summary: string;
+    emotional_landscape: string;
+    symbolic_analysis: string;
+    narrative_interpretation: string;
+    personal_growth_insights: string;
+    cultural_perspective: string;
+    recurring_themes: string;
+    lucid_dreaming_potential: string;
+    artistic_inspiration: string;
+    daily_affirmation: string;
+  };
 }
 
 const DreamCloud: React.FC<{ darkMode: boolean; onClick: () => void }> = ({
@@ -65,32 +85,99 @@ const DreamCloud: React.FC<{ darkMode: boolean; onClick: () => void }> = ({
 
 const DreamDetails = ({ params }: { params: { id: string } }) => {
   const [dream, setDream] = useState<Dream | null>(null);
+  const [insights, setInsights] = useState<DreamInsight | null>(null);
   const { darkMode } = useDarkMode();
   const router = useRouter();
 
-  const handleBackClick = () => {
-    router.back();
+  const handleInsightsGenerated = (newInsights: DreamInsight) => {
+    setDream((prevDream) => {
+      if (prevDream === null) {
+        return null; // or handle this case as appropriate for your app
+      }
+      return {
+        ...prevDream,
+        insights: newInsights
+      };
+    });
   };
 
+  const handleBackClick = () => {
+    router.push('/dashboard');
+  };
+
+
   useEffect(() => {
-    // Fetch dream details here
-    // For now, we'll use mock data
-    setDream({
-      id: params.id,
-      title: "Flying Over a Crystal City",
-      content:
-        "As I drifted into sleep, I found myself standing on the edge of a cliff overlooking a vast, shimmering ocean. The water below was not blue, but a mesmerizing swirl of colors that seemed to dance and change with each passing moment. I took a deep breath, feeling the salty air fill my lungs, and suddenly realized I could fly. With a thought, I launched myself off the cliff, soaring high above the technicolor sea. The wind rushed through my hair as I glided effortlessly, my body weightless and free. As I flew, I noticed the sky above me was not just one shade of blue, but a tapestry of purples, pinks, and golds, as if multiple sunsets and sunrises were happening simultaneously. In the distance, I saw an island emerging from the colorful waters. As I approached, I realized it was no ordinary island, but a floating city of impossible architecture. Towers of crystal and glass spiraled into the sky, their surfaces reflecting and refracting light in dazzling patterns. Bridges of gossamer thread connected the buildings, swaying gently in the breeze. I landed softly on a platform of what looked like liquid silver, which rippled under my feet but supported my weight. As I walked through the city, I encountered beings of pure light and energy, their forms shifting and changing as they moved. They communicated with me not through words, but through pulses of color and emotion that I somehow understood perfectly. One of these beings guided me to the heart of the city, a massive structure that seemed to be made of living, breathing crystal. As I entered, I felt a surge of knowledge and understanding flood my mind. I suddenly grasped the interconnectedness of all things, the delicate balance of the universe, and my place within it. Just as I felt I was on the verge of unlocking the greatest mysteries of existence, I began to feel a pull, a tug back towards waking consciousness. I tried to hold onto the dream, to stay in this wondrous place, but it slowly faded away. As I opened my eyes, I was left with a profound sense of peace and a lingering feeling that I had touched something truly extraordinary.",
-      date: "2023-05-15T08:30:00Z",
-      isLucid: false,
-      emotions: [
-        { name: "Awe", intensity: 9 },
-        { name: "Freedom", intensity: 10 },
-        { name: "Excitement", intensity: 8 },
-      ],
-      themes: ["Flying", "Urban landscape", "Control", "Beauty"],
-      audioUrl: "/mock-audio.mp3",
-    });
+    const fetchDreamData = async () => {
+      try {
+        // Fetch dream details
+        const dreamResponse = await fetch(`${ENDPOINTS.DREAMS}${params.id}/`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+  
+        if (!dreamResponse.ok) {
+          throw new Error('Failed to fetch dream');
+        }
+  
+        const dreamData = await dreamResponse.json();
+  
+        // Fetch emotions
+        const emotionsResponse = await fetch(`${ENDPOINTS.DREAMS}${params.id}/emotions/`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+  
+        if (!emotionsResponse.ok) {
+          throw new Error('Failed to fetch emotions');
+        }
+  
+        const emotionsData = await emotionsResponse.json();
+  
+        // Fetch themes
+        const themesResponse = await fetch(`${ENDPOINTS.DREAMS}${params.id}/themes/`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+  
+        if (!themesResponse.ok) {
+          throw new Error('Failed to fetch themes');
+        }
+  
+        const themesData = await themesResponse.json();
+  
+        console.log('Fetched dream data:', dreamData);
+        console.log('Fetched emotions:', emotionsData);
+        console.log('Fetched themes:', themesData);
+  
+        setDream({
+          id: dreamData.id,
+          title: dreamData.title,
+          content: dreamData.content,
+          date: dreamData.date,
+          isLucid: dreamData.is_lucid,
+          audioUrl: dreamData.audio_recording,
+          emotions: emotionsData.map((emotion: any) => ({
+            name: emotion.name,
+            intensity: emotion.intensity || 5 // Default intensity if not provided
+          })),
+          themes: themesData.map((theme: any) => theme.name),
+          insights: dreamData.insight ? {
+            summary: dreamData.insight.summary,
+            analysis: dreamData.insight.analysis
+          } : null,
+        });
+      } catch (error) {
+        console.error('Error fetching dream data:', error);
+        // Handle error (e.g., set an error state)
+      }
+    };
+  
+    fetchDreamData();
   }, [params.id]);
+  
 
   if (!dream) {
     return <div>Loading...</div>;
@@ -168,7 +255,8 @@ const DreamDetails = ({ params }: { params: { id: string } }) => {
                       : "bg-indigo-200 text-indigo-800"
                   }`}
                 >
-                  {emotion.name} - {emotion.intensity}/10
+                  {emotion.name}
+                  {/* {emotion.name} - {emotion.intensity}/10 */}
                 </motion.div>
               ))}
             </div>
@@ -194,20 +282,18 @@ const DreamDetails = ({ params }: { params: { id: string } }) => {
               ))}
             </div>
           </div>
-
-          <DreamDivider darkMode={darkMode} />
+        </div>
+        <DreamDivider darkMode={darkMode} />
+        <div className="space-y-6">
+        <DreamInsightsPanel 
+    darkMode={darkMode} 
+    insights={dream.insights} 
+    dreamId={dream.id}
+    dreamContent={dream.content}
+    onInsightsGenerated={handleInsightsGenerated}
+  />
           <div className="flex justify-between items-center">
             <div className="flex space-x-3">
-              <button
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm ${
-                  darkMode
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-blue-500 hover:bg-blue-600"
-                } text-white transition duration-300`}
-              >
-                <Feather className="w-4 h-4" />
-                <span>Dream Insights</span>
-              </button>
               <button
                 className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm ${
                   darkMode
@@ -227,16 +313,6 @@ const DreamDetails = ({ params }: { params: { id: string } }) => {
               >
                 <ImageIcon className="w-4 h-4" />
                 <span>Visualize Dream</span>
-              </button>
-              <button
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm ${
-                  darkMode
-                    ? "bg-teal-600 hover:bg-teal-700"
-                    : "bg-teal-500 hover:bg-teal-600"
-                } text-white transition duration-300`}
-              >
-                <Brain className="w-4 h-4" />
-                <span>AI Dream Interpretation</span>
               </button>
             </div>
             <div className="flex space-x-2">
@@ -303,3 +379,134 @@ const DreamDivider: React.FC<{ darkMode: boolean }> = ({ darkMode }) => (
     </div>
   </div>
 );
+
+const DreamInsightsPanel: React.FC<{
+  darkMode: boolean;
+  insights: DreamInsight | null;
+  dreamId: string;
+  dreamContent: string;
+  onInsightsGenerated: (newInsights: DreamInsight) => void;
+}> = ({ darkMode, insights, dreamId, dreamContent, onInsightsGenerated }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateInsights = async () => {
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const response = await fetch(ENDPOINTS.GET_DREAM_INSIGHT, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ dream_id: dreamId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate insights');
+      }
+
+      const data = await response.json();
+      onInsightsGenerated(data.insight);
+    } catch (err) {
+      console.error('Error generating insights:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate insights. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const renderInsightSection = (title: string, content: string) => (
+    <div className="mb-6">
+      <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>{title}</h3>
+      <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} bg-opacity-50 p-4 rounded-lg ${darkMode ? 'bg-purple-800' : 'bg-purple-200'}`}>{content}</p>
+    </div>
+  );
+
+  const extractContent = (content: string, tag: string) => {
+    if (!content) return '';
+    const regex = new RegExp(`<${tag}>([\\s\\S]*?)<\/${tag}>`, 'i');
+    const match = content.match(regex);
+    return match ? match[1].trim() : '';
+  };
+
+  return (
+    <div className={`p-6 rounded-lg ${darkMode ? "bg-purple-900/30" : "bg-purple-100"}`}>
+      <h2 className="text-2xl font-semibold mb-4 flex items-center">
+        <Brain className="w-6 h-6 mr-2" />
+        Dream Insights
+      </h2>
+      {insights && insights.analysis ? (
+        <div>
+          {renderInsightSection("Dream Summary", extractContent(insights.analysis, 'dream_summary'))}
+          {renderInsightSection("Emotional Landscape", extractContent(insights.analysis, 'emotional_landscape'))}
+          {renderInsightSection("Symbolic Analysis", extractContent(insights.analysis, 'symbolic_analysis'))}
+          {renderInsightSection("Narrative Interpretation", extractContent(insights.analysis, 'narrative_interpretation'))}
+          {renderInsightSection("Personal Growth Insights", extractContent(insights.analysis, 'personal_growth_insights'))}
+          {renderInsightSection("Cultural Perspective", extractContent(insights.analysis, 'cultural_perspective'))}
+          {renderInsightSection("Recurring Themes", extractContent(insights.analysis, 'recurring_themes'))}
+          {renderInsightSection("Lucid Dreaming Potential", extractContent(insights.analysis, 'lucid_dreaming_potential'))}
+          {renderInsightSection("Artistic Inspiration", extractContent(insights.analysis, 'artistic_inspiration'))}
+          {renderInsightSection("Daily Affirmation", extractContent(insights.analysis, 'daily_affirmation'))}
+        </div>
+      ) : (
+        <div className="flex items-center space-x-2">
+          <AlertCircle className="w-5 h-5 text-yellow-500" />
+          <p>No AI insights available yet. Click the button below to generate insights for this dream.</p>
+        </div>
+      )}
+      {!insights && (
+        <motion.button
+          onClick={generateInsights}
+          disabled={isGenerating}
+          className={`mt-4 flex items-center space-x-1 px-4 py-2 rounded-full text-sm ${
+            darkMode
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-blue-500 hover:bg-blue-600"
+          } text-white transition duration-300 relative overflow-hidden`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <motion.span
+            className="absolute inset-0 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isGenerating ? 1 : 0 }}
+          >
+            <motion.div
+              className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          </motion.span>
+          <motion.span
+            initial={{ opacity: 1 }}
+            animate={{ opacity: isGenerating ? 0 : 1 }}
+          >
+            <Brain className="w-4 h-4 mr-1" />
+            Generate AI Insights
+          </motion.span>
+          <motion.div
+            className="absolute right-2 top-1/2 transform -translate-y-1/2"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Sparkles size={16} className="text-yellow-300" />
+          </motion.div>
+        </motion.button>
+      )}
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="text-red-500 mt-2"
+        >
+          {error}
+        </motion.p>
+      )}
+    </div>
+  );
+};

@@ -12,8 +12,12 @@ export const ENDPOINTS = {
     SUGGEST_THEMES: `${API_BASE_URL}/suggest-themes/`,
     SUGGEST_EMOTIONS: `${API_BASE_URL}/suggest-emotions/`,
     SUGGEST_TITLE: `${API_BASE_URL}/suggest-title/`,
+    GET_DREAM_INSIGHT: `${API_BASE_URL}/generate-dream-insight/`,
+    CHECK_DREAM_INSIGHT: (dreamId: string) => `${API_BASE_URL}/dreams/${dreamId}/check-insight/`,
 
     TOKEN: `${API_BASE_URL}/token/`,
     TOKEN_REFRESH: `${API_BASE_URL}/token/refresh/`,
     TOKEN_VERIFY: `${API_BASE_URL}/token/verify/`,
+
+
   };
